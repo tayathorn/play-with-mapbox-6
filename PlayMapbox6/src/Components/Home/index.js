@@ -6,13 +6,13 @@ import {
   View
 } from 'react-native';
 
-import Mapbox, { MapView } from '@mapbox/react-native-mapbox-gl'
+import Map from '../Map'
 
 export default class Home extends Component {
   render() {
     return (
       <View style={styles.container}>
-          <Text>Hi</Text>
+          <Map/>
       </View>
     )
   }

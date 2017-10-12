@@ -4090,8 +4090,8 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 ua-parser-js@^0.7.9:
-  version "0.7.15"
-  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.15.tgz#11d418dde957268b2d957c9c82f7d29a0a1bc34f"
+  version "0.7.16"
+  resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-0.7.16.tgz#50bce6df788dc5f13cdd2e1241332ffe18092243"
 
 uglify-js@2.7.5:
   version "2.7.5"
