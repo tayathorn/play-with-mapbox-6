@@ -31,7 +31,10 @@ export default class Map extends Component {
     this.state = {
       isFetchingAndroidPermission: IS_ANDROID,
       isAndroidPermissionGranted: false,
-      geoJsonPoints: []
+      geoJsonPointsCollection: {
+        "type" : "FeatureCollection",
+        "features" : []
+      }
     }
   }
 
@@ -56,15 +59,33 @@ export default class Map extends Component {
   }
 
   convertDataToGeoJson = () => {
-    let geoPoint = GeoJsonHelper.convertToGeoJsonPoint([102.7578113, 16.1264536], { name: 'point1'})
+    // let geoPoint = GeoJsonHelper.convertToGeoJsonPoint([102.7578113, 16.1264536], { name: 'point1'})
 
-    console.log('geoPoint : ', geoPoint)
+    // console.log('geoPoint : ', geoPoint)
+
+
+    let geoPoints = PostalJson.map((postal) => {
+      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint([postal.lng, postal.lat], { id: postal.id, zip: postal.zip, province: postal.province, district: postal.district})
+      return geoPoint
+    })
+
+    let geoPointsCollection = GeoJsonHelper.convertToGeoJsonFeatureCollection(geoPoints)
+
+    this.setState({
+      geoJsonPointsCollection: geoPointsCollection
+    })
+
+    // console.log('geoPointsCollection : ', geoPointsCollection)
   }
 
   tryUpdateCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition(
-      this.onUpdateCurrentLocationSuccess,
-      this.onUpdateCurrentLocationFail,
+      (loc) => {
+        console.log('success : ', loc)
+      },
+      (err) => {
+        console.log('err : ', err)
+      },
       {
         enableHighAccuracy: true,
         maximumAge: 250,
@@ -72,14 +93,6 @@ export default class Map extends Component {
       }
     )
   }
-
-  onUpdateCurrentLocationSuccess = () => {
-    console.log('onUpdateCurrentLocationSuccess')
-  }
-  
-  onUpdateCurrentLocationFail = () => {
-      console.log('onUpdateCurrentLocationFail')
-    }
 
   getAnnotations = () => {
 
@@ -101,6 +114,8 @@ export default class Map extends Component {
       );
     }
 
+    console.log('render geoJsonPointsCollection :: ', this.state.geoJsonPointsCollection)
+
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
@@ -111,7 +126,8 @@ export default class Map extends Component {
           showUserLocation={true}
           zoomLevel={2}
         >
-          <MapboxGL.ShapeSource id='postalSource' shape={postalGeoJSON}>
+          {/* <MapboxGL.ShapeSource id='postalSource' shape={postalGeoJSON}> */}
+          <MapboxGL.ShapeSource id='postalSource' shape={this.state.geoJsonPointsCollection}>
             <MapboxGL.CircleLayer id='postalFill' />
           </MapboxGL.ShapeSource>
         </MapboxGL.MapView>

@@ -8,6 +8,14 @@
         "coordinates" : [102.7578113, 16.1264536]
       },
       "properties": {"name": "point"}
+    },
+    {
+      "type" : "Feature",
+      "geometry" : {
+        "type" : "Point",
+        "coordinates" : [100.4986793, 13.7560243]
+      },
+      "properties": {"name": "point"}
     }
   ]
 }
