@@ -19,6 +19,10 @@ import { IS_ANDROID } from '../../utils'
 
 MapboxGL.setAccessToken(Config.map.accessToken)
 
+import postalGeoJSON from '../../data/postal_data.json';
+
+import * as GeoJsonHelper from '../../utils/GeoJsonHelper'
+
 export default class Map extends Component {
 
   constructor(props) {
@@ -27,6 +31,7 @@ export default class Map extends Component {
     this.state = {
       isFetchingAndroidPermission: IS_ANDROID,
       isAndroidPermissionGranted: false,
+      geoJsonPoints: []
     }
   }
 
@@ -39,6 +44,10 @@ export default class Map extends Component {
       });
     }
     MapboxGL.setAccessToken(Config.map.accessToken);
+
+    this.tryUpdateCurrentLocation()
+
+    this.convertDataToGeoJson()
   }
 
   onDidFinishLoadingMap = () => {
@@ -46,9 +55,37 @@ export default class Map extends Component {
 
   }
 
+  convertDataToGeoJson = () => {
+    let geoPoint = GeoJsonHelper.convertToGeoJsonPoint([102.7578113, 16.1264536], { name: 'point1'})
+
+    console.log('geoPoint : ', geoPoint)
+  }
+
+  tryUpdateCurrentLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+      this.onUpdateCurrentLocationSuccess,
+      this.onUpdateCurrentLocationFail,
+      {
+        enableHighAccuracy: true,
+        maximumAge: 250,
+        timeout:10000,
+      }
+    )
+  }
+
+  onUpdateCurrentLocationSuccess = () => {
+    console.log('onUpdateCurrentLocationSuccess')
+  }
+  
+  onUpdateCurrentLocationFail = () => {
+      console.log('onUpdateCurrentLocationFail')
+    }
+
   getAnnotations = () => {
 
   }
+
+
 
   render() {
     if (IS_ANDROID && !this.state.isAndroidPermissionGranted) {
@@ -72,7 +109,12 @@ export default class Map extends Component {
           onDidFinishLoadingMap={this.onDidFinishLoadingMap}
           centerCoordinate={[100.5352369, 13.7287357]}
           showUserLocation={true}
-        />
+          zoomLevel={2}
+        >
+          <MapboxGL.ShapeSource id='postalSource' shape={postalGeoJSON}>
+            <MapboxGL.CircleLayer id='postalFill' />
+          </MapboxGL.ShapeSource>
+        </MapboxGL.MapView>
       </View>
     )
   }
