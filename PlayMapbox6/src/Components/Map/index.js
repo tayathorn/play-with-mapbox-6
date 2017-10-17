@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import {
   StyleSheet,
   Text,
-  View
+  View,
+  Platform
 } from 'react-native';
 
 // lib
@@ -44,6 +45,8 @@ export default class Map extends Component {
         "features": []
       }
     }
+
+    this.userLocation = [0, 0]
   }
 
   async componentWillMount() {
@@ -57,16 +60,40 @@ export default class Map extends Component {
     MapboxGL.setAccessToken(Config.map.accessToken);
 
     this.tryUpdateCurrentLocation()
-
     this.convertDataToGeoJson()   // DOING:
   }
 
-  onDidFinishLoadingMap = () => {   
+  onDidFinishLoadingMap = () => {
+    // DOING:
     console.log('onDidFinishLoadingMap')
-    let coords = [100.5311166, 13.7270703]
-    this._map.flyTo(coords, 12000)
-    this._map.zoomTo(10)
+    // let coords = [100.5311166, 13.7270703]
+    // this._map.flyTo(coords, 12000)
+    // this._map.zoomTo(10)
+
+    // this._map.setCamera({
+    //   centerCoordinate: coords,
+    //   zoomLevel: 10,
+    //   duration: 2000,
+    // })
+
+    this.flyToUserLocation()
   }
+
+  flyToUserLocation = () => {
+    console.log('flyToUserLocation')
+    // this._map.setCamera({
+    //   centerCoordinate: this.userLocation,
+    //   zoomLevel: 10,
+    //   duration: 2000,
+    // })
+
+    this._map.flyTo(this.userLocation)
+    if(IS_ANDROID) {
+      this._map.zoomTo(10)
+    }
+  }
+
+
 
   convertDataToGeoJson = () => {
 
@@ -94,6 +121,9 @@ export default class Map extends Component {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         console.log('position : ', position)
+        let { latitude, longitude } = position.coords
+        this.userLocation = [longitude, latitude]
+        console.log('userLocation : ', this.userLocation)
       },
       (error) => {
         console.log('err : ', error)
@@ -132,10 +162,15 @@ export default class Map extends Component {
       );
     }
 
+    // DOING:
+
     let symbolLayer = MapboxGL.StyleSheet.create({
       tree: {
         iconImage: tree,
-        iconSize: 0.3,
+        iconSize: Platform.select({
+          ios: 0.1,
+          android: 0.3
+        }),
         visibility: (this.props.visibleTree) ? 'visible' : 'none'
       },
 
@@ -162,13 +197,14 @@ export default class Map extends Component {
           onPress={this.onPressMap}
           logoEnabled={false}
           attributionEnabled={false}
+          onFlyToComplete={() => console.log('onFlyToComplete')}
         //onRegionWillChange={()=>console.log('onRegionWillChange')}
         //onRegionIsChanging={()=>console.log('onRegionIsChanging')}
         //onRegionDidChange={()=>console.log('onRegionDidChange')}
         >
-          <MapboxGL.ShapeSource id='postalSource1' shape={postalGeoJSON}>
+          {/* <MapboxGL.ShapeSource id='postalSource1' shape={postalGeoJSON}>
             <MapboxGL.SymbolLayer id='bird' style={symbolLayer.bird} />
-          </MapboxGL.ShapeSource>
+          </MapboxGL.ShapeSource> */}
 
           <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
             <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} />
@@ -192,19 +228,6 @@ const layerStyle = MapboxGL.StyleSheet.create({
     circleStrokeWidth: 10,
     circleStrokeColor: '#795548',
     circleStrokeOpacity: 0.5
-  },
-
-  poiSymbolLayer: {
-    textField: '{title}',
-    iconImage: bird,
-    textAnchor: 'top',
-    textOffset: [0, 1.5],
-  },
-
-  poiSymbolLayer2: {
-    iconImage: tree,
-    iconSize: 0.3,
-    visibility: 'visible'
   },
 
 })
