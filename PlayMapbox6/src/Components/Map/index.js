@@ -26,6 +26,8 @@ import tree from '../../images/icons/tree-pine.png'
 
 const _ = undefined
 
+const INITIAL_COORD = [0, 0]
+
 
 MapboxGL.setAccessToken(Config.map.accessToken)
 
@@ -59,7 +61,11 @@ export default class Map extends Component {
     this.convertDataToGeoJson()   // DOING:
   }
 
-  onDidFinishLoadingMap = () => {
+  onDidFinishLoadingMap = () => {   
+    console.log('onDidFinishLoadingMap')
+    let coords = [100.5311166, 13.7270703]
+    this._map.flyTo(coords, 12000)
+    this._map.zoomTo(10)
   }
 
   convertDataToGeoJson = () => {
@@ -67,12 +73,12 @@ export default class Map extends Component {
     let geoPoints = PostalJson.map((postal) => {
       let coordinates = [postal.lng, postal.lat]
       let properties = {
-        zip: postal.zip, 
-        province: postal.province, 
+        zip: postal.zip,
+        province: postal.province,
         district: postal.district
       }
 
-      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint(coordinates, properties,_,postal.id)
+      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint(coordinates, properties, _, postal.id)
       return geoPoint
     })
 
@@ -92,11 +98,11 @@ export default class Map extends Component {
       (error) => {
         console.log('err : ', error)
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 20000,
-        maximumAge: 1000
-      }
+      // {
+      //   enableHighAccuracy: true,
+      //   timeout: 20000,
+      //   maximumAge: 1000
+      // }
     )
   }
 
@@ -106,7 +112,7 @@ export default class Map extends Component {
     const { screenPointX, screenPointY } = res.properties;
 
     let query = this._map.queryRenderedFeaturesAtPoint([
-      screenPointX, 
+      screenPointX,
       screenPointY
     ], null, ['bird', 'tree'])
     console.log('query : ', query)
@@ -127,10 +133,18 @@ export default class Map extends Component {
     }
 
     let symbolLayer = MapboxGL.StyleSheet.create({
-      poiSymbolLayer2: {
+      tree: {
         iconImage: tree,
         iconSize: 0.3,
         visibility: (this.props.visibleTree) ? 'visible' : 'none'
+      },
+
+      bird: {
+        textField: '{title}',
+        iconImage: bird,
+        textAnchor: 'top',
+        textOffset: [0, 1.5],
+        visibility: (this.props.visibleBird) ? 'visible' : 'none'
       }
     })
 
@@ -141,17 +155,23 @@ export default class Map extends Component {
           style={{ flex: 1 }}
           styleURL={Config.map.styleUrl}
           onDidFinishLoadingMap={this.onDidFinishLoadingMap}
-          centerCoordinate={[100.5352369, 13.7287357]}
+          centerCoordinate={INITIAL_COORD}
           showUserLocation={true}
+          userTrackingMode={MapboxGL.UserTrackingModes.Follow}
           zoomLevel={2}
           onPress={this.onPressMap}
+          logoEnabled={false}
+          attributionEnabled={false}
+        //onRegionWillChange={()=>console.log('onRegionWillChange')}
+        //onRegionIsChanging={()=>console.log('onRegionIsChanging')}
+        //onRegionDidChange={()=>console.log('onRegionDidChange')}
         >
           <MapboxGL.ShapeSource id='postalSource1' shape={postalGeoJSON}>
-            <MapboxGL.SymbolLayer id='bird' style={layerStyle.poiSymbolLayer} />
+            <MapboxGL.SymbolLayer id='bird' style={symbolLayer.bird} />
           </MapboxGL.ShapeSource>
 
           <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
-            <MapboxGL.SymbolLayer id='tree' style={symbolLayer.poiSymbolLayer2} />
+            <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} />
           </MapboxGL.ShapeSource>
 
         </MapboxGL.MapView>
@@ -178,9 +198,9 @@ const layerStyle = MapboxGL.StyleSheet.create({
     textField: '{title}',
     iconImage: bird,
     textAnchor: 'top',
-    textOffset: [0,1.5],
+    textOffset: [0, 1.5],
   },
-  
+
   poiSymbolLayer2: {
     iconImage: tree,
     iconSize: 0.3,
