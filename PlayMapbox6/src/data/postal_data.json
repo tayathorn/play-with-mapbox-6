@@ -2,6 +2,7 @@
   "type" : "FeatureCollection",
   "features" : [
     {
+      "id": "id1",
       "type" : "Feature",
       "geometry" : {
         "type" : "Point",
@@ -14,6 +15,7 @@
       }
     },
     {
+      "id": "id2",
       "type" : "Feature",
       "geometry" : {
         "type" : "Point",

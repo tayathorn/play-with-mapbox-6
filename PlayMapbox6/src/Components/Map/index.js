@@ -77,7 +77,6 @@ export default class Map extends Component {
       geoJsonPointsCollection: geoPointsCollection
     })
 
-    // console.log('geoPointsCollection : ', geoPointsCollection)
   }
 
   tryUpdateCurrentLocation = () => {
@@ -96,8 +95,16 @@ export default class Map extends Component {
     )
   }
 
-  animate = () => {
+  onPressMap = (res) => {
+    console.log('onPressMap : ', res)
 
+    const { screenPointX, screenPointY } = res.properties;
+
+    let query = this._map.queryRenderedFeaturesAtPoint([
+      screenPointX, 
+      screenPointY
+    ], null, ['bird'])
+    console.log('query : ', query)
   }
 
   render() {
@@ -125,20 +132,22 @@ export default class Map extends Component {
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
+          ref={(ref) => this._map = ref}
           style={{ flex: 1 }}
           styleURL={Config.map.styleUrl}
           onDidFinishLoadingMap={this.onDidFinishLoadingMap}
           centerCoordinate={[100.5352369, 13.7287357]}
           showUserLocation={true}
           zoomLevel={2}
+          onPress={this.onPressMap}
         >
           <MapboxGL.ShapeSource id='postalSource1' shape={postalGeoJSON}>
             <MapboxGL.SymbolLayer id='bird' style={layerStyle.poiSymbolLayer} />
           </MapboxGL.ShapeSource>
 
-          <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
+          {/* <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
             <MapboxGL.SymbolLayer id='tree' style={symbolLayer.poiSymbolLayer2} />
-          </MapboxGL.ShapeSource>
+          </MapboxGL.ShapeSource> */}
         </MapboxGL.MapView>
       </View>
     )
