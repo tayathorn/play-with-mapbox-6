@@ -28,6 +28,8 @@ import tree from '../../images/icons/tree-pine.png'
 const _ = undefined
 
 const INITIAL_COORD = [0, 0]
+const RADIUS = 1 // unit : KM
+const ZOOM_LEVEL = 14
 
 
 MapboxGL.setAccessToken(Config.map.accessToken)
@@ -43,7 +45,12 @@ export default class Map extends Component {
       geoJsonPointsCollection: {
         "type": "FeatureCollection",
         "features": []
+      },
+      userCirclePolygon: {
+        "type": "FeatureCollection",
+        "features": []
       }
+      
     }
 
     this.userLocation = [0, 0]
@@ -77,6 +84,8 @@ export default class Map extends Component {
     // })
 
     this.flyToUserLocation()
+
+    this.createCircleFromCenter()
   }
 
   flyToUserLocation = () => {
@@ -89,11 +98,9 @@ export default class Map extends Component {
 
     this._map.flyTo(this.userLocation)
     if(IS_ANDROID) {
-      this._map.zoomTo(10)
+      this._map.zoomTo(ZOOM_LEVEL)
     }
   }
-
-
 
   convertDataToGeoJson = () => {
 
@@ -115,6 +122,29 @@ export default class Map extends Component {
       geoJsonPointsCollection: geoPointsCollection
     })
 
+  }
+
+  createCircleFromCenter = () => {
+    let circle = GeoJsonHelper.createCirclePolygon(this.userLocation, RADIUS)
+    console.log('circle : ', circle)
+
+    let featureCollectionCircle = GeoJsonHelper.convertToGeoJsonFeatureCollection([circle])
+    console.log('featureCollectionCircle : ', featureCollectionCircle)
+
+    this.setState({
+      userCirclePolygon: featureCollectionCircle
+    }, () => {
+      this.findNearbyPlaces()
+    })
+  }
+
+  findNearbyPlaces = () => {
+    let points = this.state.geoJsonPointsCollection
+    let within = this.state.userCirclePolygon
+
+    let nearbyPoints = GeoJsonHelper.findWithin(points, within)
+
+    console.log('nearbyPoints : ', nearbyPoints)
   }
 
   tryUpdateCurrentLocation = () => {
@@ -162,8 +192,6 @@ export default class Map extends Component {
       );
     }
 
-    // DOING:
-
     let symbolLayer = MapboxGL.StyleSheet.create({
       tree: {
         iconImage: tree,
@@ -183,6 +211,16 @@ export default class Map extends Component {
       }
     })
 
+    let circleRadiusLayerIndex = Platform.select({
+      ios: null,
+      android: 9  // under userLocation
+    })
+
+    let initialZoomLevel = Platform.select({
+      ios: ZOOM_LEVEL,
+      android: 10
+    })
+
     return (
       <View style={styles.container}>
         <MapboxGL.MapView
@@ -193,7 +231,7 @@ export default class Map extends Component {
           centerCoordinate={INITIAL_COORD}
           showUserLocation={true}
           userTrackingMode={MapboxGL.UserTrackingModes.Follow}
-          zoomLevel={2}
+          zoomLevel={initialZoomLevel}
           onPress={this.onPressMap}
           logoEnabled={false}
           attributionEnabled={false}
@@ -208,6 +246,10 @@ export default class Map extends Component {
 
           <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
             <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} />
+          </MapboxGL.ShapeSource>
+
+          <MapboxGL.ShapeSource id='userRadius' shape={this.state.userCirclePolygon}>
+            <MapboxGL.FillLayer id='circleRadius' style={layerStyle.userCircleFill} layerIndex={circleRadiusLayerIndex} />
           </MapboxGL.ShapeSource>
 
         </MapboxGL.MapView>
@@ -229,5 +271,10 @@ const layerStyle = MapboxGL.StyleSheet.create({
     circleStrokeColor: '#795548',
     circleStrokeOpacity: 0.5
   },
+
+  userCircleFill: {
+    fillColor: '#607D8B',
+    fillOpacity: 0.5
+  }
 
 })
