@@ -10,18 +10,22 @@ import MapboxGL from '@mapbox/react-native-mapbox-gl'
 
 // data
 import { PostalJson } from '../../data/postalJson'
+import postalGeoJSON from '../../data/postal_data.json';
 
 // config
 import { Config } from '../../config'
 
 // utils
 import { IS_ANDROID } from '../../utils'
+import * as GeoJsonHelper from '../../utils/GeoJsonHelper'
+
+// image
+import deer from '../../images/icons/deer.png'
+import bird from '../../images/icons/bird.png'
+import tree from '../../images/icons/tree-pine.png'
+
 
 MapboxGL.setAccessToken(Config.map.accessToken)
-
-import postalGeoJSON from '../../data/postal_data.json';
-
-import * as GeoJsonHelper from '../../utils/GeoJsonHelper'
 
 export default class Map extends Component {
 
@@ -32,13 +36,13 @@ export default class Map extends Component {
       isFetchingAndroidPermission: IS_ANDROID,
       isAndroidPermissionGranted: false,
       geoJsonPointsCollection: {
-        "type" : "FeatureCollection",
-        "features" : []
+        "type": "FeatureCollection",
+        "features": []
       }
     }
   }
 
-  async componentWillMount () {
+  async componentWillMount() {
     if (IS_ANDROID) {
       const isGranted = await MapboxGL.requestAndroidLocationPermissions();
       this.setState({
@@ -50,12 +54,10 @@ export default class Map extends Component {
 
     this.tryUpdateCurrentLocation()
 
-    this.convertDataToGeoJson()
+    this.convertDataToGeoJson()   // DOING:
   }
 
   onDidFinishLoadingMap = () => {
-    console.log('onDidFinishLoadingMap')
-
   }
 
   convertDataToGeoJson = () => {
@@ -65,7 +67,7 @@ export default class Map extends Component {
 
 
     let geoPoints = PostalJson.map((postal) => {
-      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint([postal.lng, postal.lat], { id: postal.id, zip: postal.zip, province: postal.province, district: postal.district})
+      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint([postal.lng, postal.lat], { id: postal.id, zip: postal.zip, province: postal.province, district: postal.district })
       return geoPoint
     })
 
@@ -80,25 +82,23 @@ export default class Map extends Component {
 
   tryUpdateCurrentLocation = () => {
     navigator.geolocation.getCurrentPosition(
-      (loc) => {
-        console.log('success : ', loc)
+      (position) => {
+        console.log('position : ', position)
       },
-      (err) => {
-        console.log('err : ', err)
+      (error) => {
+        console.log('err : ', error)
       },
       {
         enableHighAccuracy: true,
-        maximumAge: 250,
-        timeout:10000,
+        timeout: 20000,
+        maximumAge: 1000
       }
     )
   }
 
-  getAnnotations = () => {
+  animate = () => {
 
   }
-
-
 
   render() {
     if (IS_ANDROID && !this.state.isAndroidPermissionGranted) {
@@ -114,7 +114,13 @@ export default class Map extends Component {
       );
     }
 
-    console.log('render geoJsonPointsCollection :: ', this.state.geoJsonPointsCollection)
+    let symbolLayer = MapboxGL.StyleSheet.create({
+      poiSymbolLayer2: {
+        iconImage: tree,
+        iconSize: 0.3,
+        visibility: (this.props.visibleTree) ? 'visible' : 'none'
+      }
+    })
 
     return (
       <View style={styles.container}>
@@ -126,9 +132,12 @@ export default class Map extends Component {
           showUserLocation={true}
           zoomLevel={2}
         >
-          {/* <MapboxGL.ShapeSource id='postalSource' shape={postalGeoJSON}> */}
-          <MapboxGL.ShapeSource id='postalSource' shape={this.state.geoJsonPointsCollection}>
-            <MapboxGL.CircleLayer id='postalFill' />
+          <MapboxGL.ShapeSource id='postalSource1' shape={postalGeoJSON}>
+            <MapboxGL.SymbolLayer id='bird' style={layerStyle.poiSymbolLayer} />
+          </MapboxGL.ShapeSource>
+
+          <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
+            <MapboxGL.SymbolLayer id='tree' style={symbolLayer.poiSymbolLayer2} />
           </MapboxGL.ShapeSource>
         </MapboxGL.MapView>
       </View>
@@ -140,4 +149,27 @@ const styles = StyleSheet.create({
   container: {
     flex: 1
   }
+})
+
+const layerStyle = MapboxGL.StyleSheet.create({
+  poiCircleLayer: {
+    circleColor: '#f44336',
+    circleStrokeWidth: 10,
+    circleStrokeColor: '#795548',
+    circleStrokeOpacity: 0.5
+  },
+
+  poiSymbolLayer: {
+    textField: '{title}',
+    iconImage: bird,
+    textAnchor: 'top',
+    textOffset: [0,1.5],
+  },
+  
+  poiSymbolLayer2: {
+    iconImage: tree,
+    iconSize: 0.3,
+    visibility: 'visible'
+  },
+
 })

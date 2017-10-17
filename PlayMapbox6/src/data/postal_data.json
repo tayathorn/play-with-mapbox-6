@@ -7,7 +7,11 @@
         "type" : "Point",
         "coordinates" : [102.7578113, 16.1264536]
       },
-      "properties": {"name": "point"}
+      "properties": {
+        "title": "Bird",
+        // "icon": "https://image.flaticon.com/icons/png/128/141/141746.png"
+        "icon": "bird"
+      }
     },
     {
       "type" : "Feature",
@@ -15,7 +19,10 @@
         "type" : "Point",
         "coordinates" : [100.4986793, 13.7560243]
       },
-      "properties": {"name": "point"}
+      "properties": {
+        "title": "Deer",
+        "icon": "deer"
+      }
     }
   ]
 }

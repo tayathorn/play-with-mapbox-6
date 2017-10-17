@@ -6,9 +6,7 @@ export function convertToGeoJsonPoint(coordinates, properties = {}) {
   return point
 }
 
-export function convertToGeoJsonFeatureCollection(data) {
-  // let features = [data]
-  let features = data
+export function convertToGeoJsonFeatureCollection(features) {
   let featureCollection = turf.featureCollection(features)
 
   return featureCollection
