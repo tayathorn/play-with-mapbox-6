@@ -1,7 +1,8 @@
-const turf = require('./turf.min.js')
+// const turf = require('./turf.min.js')
+import * as turf from '@turf/helpers'
 
-export function convertToGeoJsonPoint(coordinates, properties = {}) {
-  let point = turf.point(coordinates, properties)
+export function convertToGeoJsonPoint(coordinates, properties = {}, bbox = null, id = null) {
+  let point = turf.point(coordinates, properties, bbox, id)
 
   return point
 }

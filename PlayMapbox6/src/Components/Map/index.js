@@ -24,6 +24,8 @@ import deer from '../../images/icons/deer.png'
 import bird from '../../images/icons/bird.png'
 import tree from '../../images/icons/tree-pine.png'
 
+const _ = undefined
+
 
 MapboxGL.setAccessToken(Config.map.accessToken)
 
@@ -61,13 +63,16 @@ export default class Map extends Component {
   }
 
   convertDataToGeoJson = () => {
-    // let geoPoint = GeoJsonHelper.convertToGeoJsonPoint([102.7578113, 16.1264536], { name: 'point1'})
-
-    // console.log('geoPoint : ', geoPoint)
-
 
     let geoPoints = PostalJson.map((postal) => {
-      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint([postal.lng, postal.lat], { id: postal.id, zip: postal.zip, province: postal.province, district: postal.district })
+      let coordinates = [postal.lng, postal.lat]
+      let properties = {
+        zip: postal.zip, 
+        province: postal.province, 
+        district: postal.district
+      }
+
+      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint(coordinates, properties,_,postal.id)
       return geoPoint
     })
 
@@ -103,7 +108,7 @@ export default class Map extends Component {
     let query = this._map.queryRenderedFeaturesAtPoint([
       screenPointX, 
       screenPointY
-    ], null, ['bird'])
+    ], null, ['bird', 'tree'])
     console.log('query : ', query)
   }
 
@@ -145,9 +150,10 @@ export default class Map extends Component {
             <MapboxGL.SymbolLayer id='bird' style={layerStyle.poiSymbolLayer} />
           </MapboxGL.ShapeSource>
 
-          {/* <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
+          <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
             <MapboxGL.SymbolLayer id='tree' style={symbolLayer.poiSymbolLayer2} />
-          </MapboxGL.ShapeSource> */}
+          </MapboxGL.ShapeSource>
+
         </MapboxGL.MapView>
       </View>
     )
