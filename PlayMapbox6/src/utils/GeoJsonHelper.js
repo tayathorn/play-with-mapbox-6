@@ -32,7 +32,6 @@ export function getIdFeatureEach(featureCollection) {
 
   turf.featureEach(featureCollection, (currentFeature, index) => {
     result.push(currentFeature.id)
-    // console.log('currentFeature.id : ', currentFeature.id)
   })
 
   return result

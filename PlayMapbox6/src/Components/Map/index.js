@@ -220,31 +220,47 @@ export default class Map extends Component {
       }
     })
 
-    let filterByID = this.getNearbyPointsID()
+    // let filterByID = this.getFilterNearbyPointsID()//["in", "$id", this.getNearbyPointsID()]
+    // console.log('filterByID : ', filterByID)
 
 
     return(
       <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
         <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} 
-        filter={["in", "$id", "a000", "a001", "a002", "a003", "a33"]} 
+        //filter={["in", "$id", "a000", "a001", "a002", "a003", "a33"]} 
+        //filter={filterByID} 
         />
       </MapboxGL.ShapeSource>
     )
   }
 
-  getNearbyPointsID = () => {
+  getFilterNearbyPointsID = () => {
     let pointsID = GeoJsonHelper.getIdFeatureEach(this.state.nearbyPoints)
+
     console.log('pointsID : ', pointsID)
 
-    // console.log('spread pointsID : ', ...pointsID)
+    // let test = ""
 
-    return pointsID
+    // let pointsString = pointsID.map((id) => {
+    //   // return test.concat(`"${id}" ,`)
+    //   // return `"${id}" ,`
+    //   return id
+    // })
+
+    // console.log('pointsString : ', pointsString)
+    // console.log('spread pointsString : ', ...pointsString)
+
+    // pointsString = JSON.parse(pointsString);
+
+    // let filter = ["in", "$id", ...pointsString]
+
+    return ["in", "$id", ...pointsID]
   }
 
   renderUserCircleRadius = () => {
     let circleRadiusLayerIndex = Platform.select({
       ios: null,
-      android: 160  // under userLocation   mmg: 160 , mystyle: 9
+      android: 9  // under userLocation   mmg: 160 , mystyle: 9
     })
 
     return(
@@ -269,7 +285,7 @@ export default class Map extends Component {
     if(this.state.nearbyPoints.features.length > 0) {
       return(
         <MapboxGL.ShapeSource id='nearbyPoints' shape={this.state.nearbyPoints}>
-          <MapboxGL.SymbolLayer id='nearbyLayer' style={symbolLayer.nearby} />
+          {/* <MapboxGL.SymbolLayer id='nearbyLayer' style={symbolLayer.nearby} /> */}
         </MapboxGL.ShapeSource>
       )
     }
