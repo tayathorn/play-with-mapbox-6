@@ -49,6 +49,10 @@ export default class Map extends Component {
       userCirclePolygon: {
         "type": "FeatureCollection",
         "features": []
+      },
+      nearbyPoints: {
+        "type": "FeatureCollection",
+        "features": []
       }
       
     }
@@ -118,6 +122,8 @@ export default class Map extends Component {
 
     let geoPointsCollection = GeoJsonHelper.convertToGeoJsonFeatureCollection(geoPoints)
 
+    console.log('geoPointsCollection : ', geoPointsCollection)
+
     this.setState({
       geoJsonPointsCollection: geoPointsCollection
     })
@@ -144,7 +150,12 @@ export default class Map extends Component {
 
     let nearbyPoints = GeoJsonHelper.findWithin(points, within)
 
-    console.log('nearbyPoints : ', nearbyPoints)
+    this.setState({
+      nearbyPoints
+    }, () => {
+      console.log('this.state.nearbyPoints : ', this.state.nearbyPoints)
+    })
+
   }
 
   tryUpdateCurrentLocation = () => {
@@ -178,6 +189,59 @@ export default class Map extends Component {
     console.log('query : ', query)
   }
 
+  renderPointLocations = () => {
+    let symbolLayer = MapboxGL.StyleSheet.create({
+      tree: {
+        iconImage: tree,
+        iconSize: Platform.select({
+          ios: 0.1,
+          android: 0.3
+        }),
+        visibility: (this.props.visibleTree) ? 'visible' : 'none'
+      }
+    })
+
+    return(
+      <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
+        <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} />
+      </MapboxGL.ShapeSource>
+    )
+  }
+
+  renderUserCircleRadius = () => {
+    let circleRadiusLayerIndex = Platform.select({
+      ios: null,
+      android: 9  // under userLocation
+    })
+
+    return(
+      <MapboxGL.ShapeSource id='userRadius' shape={this.state.userCirclePolygon}>
+        <MapboxGL.FillLayer id='circleRadius' style={layerStyle.userCircleFill} layerIndex={circleRadiusLayerIndex} />
+      </MapboxGL.ShapeSource>
+    )
+  }
+  
+  renderNearbyPoints = () => {
+    let symbolLayer = MapboxGL.StyleSheet.create({
+      nearby: {
+        iconImage: bird,
+        iconSize: Platform.select({
+          ios: 0.3,
+          android: 0.7
+        }),
+      }
+    })
+
+    // DOING:
+    if(this.state.nearbyPoints.features.length > 0) {
+      return(
+        <MapboxGL.ShapeSource id='nearbyPoints' shape={this.state.nearbyPoints}>
+          <MapboxGL.SymbolLayer id='nearbyLayer' style={symbolLayer.nearby} />
+        </MapboxGL.ShapeSource>
+      )
+    }
+  }
+
   render() {
     if (IS_ANDROID && !this.state.isAndroidPermissionGranted) {
       if (this.state.isFetchingAndroidPermission) {
@@ -192,29 +256,15 @@ export default class Map extends Component {
       );
     }
 
-    let symbolLayer = MapboxGL.StyleSheet.create({
-      tree: {
-        iconImage: tree,
-        iconSize: Platform.select({
-          ios: 0.1,
-          android: 0.3
-        }),
-        visibility: (this.props.visibleTree) ? 'visible' : 'none'
-      },
-
-      bird: {
-        textField: '{title}',
-        iconImage: bird,
-        textAnchor: 'top',
-        textOffset: [0, 1.5],
-        visibility: (this.props.visibleBird) ? 'visible' : 'none'
-      }
-    })
-
-    let circleRadiusLayerIndex = Platform.select({
-      ios: null,
-      android: 9  // under userLocation
-    })
+    // let symbolLayer = MapboxGL.StyleSheet.create({
+    //   bird: {
+    //     textField: '{title}',
+    //     iconImage: bird,
+    //     textAnchor: 'top',
+    //     textOffset: [0, 1.5],
+    //     visibility: (this.props.visibleBird) ? 'visible' : 'none'
+    //   }
+    // })
 
     let initialZoomLevel = Platform.select({
       ios: ZOOM_LEVEL,
@@ -244,13 +294,11 @@ export default class Map extends Component {
             <MapboxGL.SymbolLayer id='bird' style={symbolLayer.bird} />
           </MapboxGL.ShapeSource> */}
 
-          <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
-            <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} />
-          </MapboxGL.ShapeSource>
+          { this.renderPointLocations() }
 
-          <MapboxGL.ShapeSource id='userRadius' shape={this.state.userCirclePolygon}>
-            <MapboxGL.FillLayer id='circleRadius' style={layerStyle.userCircleFill} layerIndex={circleRadiusLayerIndex} />
-          </MapboxGL.ShapeSource>
+          { this.renderUserCircleRadius() }
+
+          { this.renderNearbyPoints() }
 
         </MapboxGL.MapView>
       </View>
