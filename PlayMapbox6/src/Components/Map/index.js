@@ -106,15 +106,30 @@ export default class Map extends Component {
     }
   }
 
+  // DELETE:
+  // testIcon = (index) => {
+  //   let icon = ''
+  //   if(index < 100) {
+  //     icon = 'bakery-15'
+  //   } else if(index >= 100 && index <300) {
+  //     icon = 'ferry-15'
+  //   } else {
+  //     icon = 'ice-cream-15'
+  //   }
+
+  //   return icon
+  // }
+
   convertDataToGeoJson = () => {
 
-    let geoPoints = PostalJson.map((postal) => {
+    let geoPoints = PostalJson.map((postal, index) => {
       let coordinates = [postal.lng, postal.lat]
       let properties = {
         // id: postal.id,
         zip: postal.zip,
         province: postal.province,
-        district: postal.district
+        district: postal.district,
+        // icon: this.testIcon(index)
       }
 
       let id = `a${postal.id}`
@@ -196,6 +211,7 @@ export default class Map extends Component {
     let symbolLayer = MapboxGL.StyleSheet.create({
       tree: {
         iconImage: tree,
+        // iconImage: '{icon}',
         iconSize: Platform.select({
           ios: 0.1,
           android: 0.3
@@ -228,7 +244,7 @@ export default class Map extends Component {
   renderUserCircleRadius = () => {
     let circleRadiusLayerIndex = Platform.select({
       ios: null,
-      android: 9  // under userLocation
+      android: 160  // under userLocation   mmg: 160 , mystyle: 9
     })
 
     return(
