@@ -21,15 +21,19 @@ export function createCirclePolygon(center, radius, steps = 64, units = 'kilomet
 
 export function findWithin(points, within) {
   
-  // let searchWithin = turf.featureCollection([geoJsonPolygon])
-  // let points = turf.featureCollection(geoJsonPoints)
-
   let pointsWithin = turf.within(points, within)
-
-  // console.log('[findWithin] -- pointsWithin : ', pointsWithin)
-
-  // pointsWithin = getGeomEach(pointsWithin)
-
   return pointsWithin
 
+}
+
+export function getIdFeatureEach(featureCollection) {
+
+  let result = []
+
+  turf.featureEach(featureCollection, (currentFeature, index) => {
+    result.push(currentFeature.id)
+    // console.log('currentFeature.id : ', currentFeature.id)
+  })
+
+  return result
 }

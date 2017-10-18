@@ -111,12 +111,15 @@ export default class Map extends Component {
     let geoPoints = PostalJson.map((postal) => {
       let coordinates = [postal.lng, postal.lat]
       let properties = {
+        // id: postal.id,
         zip: postal.zip,
         province: postal.province,
         district: postal.district
       }
 
-      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint(coordinates, properties, _, postal.id)
+      let id = `a${postal.id}`
+
+      let geoPoint = GeoJsonHelper.convertToGeoJsonPoint(coordinates, properties, _, id)
       return geoPoint
     })
 
@@ -201,11 +204,25 @@ export default class Map extends Component {
       }
     })
 
+    let filterByID = this.getNearbyPointsID()
+
+
     return(
       <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
-        <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} />
+        <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} 
+        filter={["in", "$id", "a000", "a001", "a002", "a003", "a33"]} 
+        />
       </MapboxGL.ShapeSource>
     )
+  }
+
+  getNearbyPointsID = () => {
+    let pointsID = GeoJsonHelper.getIdFeatureEach(this.state.nearbyPoints)
+    console.log('pointsID : ', pointsID)
+
+    // console.log('spread pointsID : ', ...pointsID)
+
+    return pointsID
   }
 
   renderUserCircleRadius = () => {
