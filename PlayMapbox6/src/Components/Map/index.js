@@ -285,7 +285,7 @@ export default class Map extends Component {
     if(this.state.nearbyPoints.features.length > 0) {
       return(
         <MapboxGL.ShapeSource id='nearbyPoints' shape={this.state.nearbyPoints}>
-          {/* <MapboxGL.SymbolLayer id='nearbyLayer' style={symbolLayer.nearby} /> */}
+          <MapboxGL.SymbolLayer id='nearbyLayer' style={symbolLayer.nearby} />
         </MapboxGL.ShapeSource>
       )
     }
