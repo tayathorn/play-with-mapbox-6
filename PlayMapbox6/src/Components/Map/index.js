@@ -25,11 +25,13 @@ import deer from '../../images/icons/deer.png'
 import bird from '../../images/icons/bird.png'
 import tree from '../../images/icons/tree-pine.png'
 
-const _ = undefined
 
+// const
+const _ = undefined
 const INITIAL_COORD = [0, 0]
 const RADIUS = 1 // unit : KM
 const ZOOM_LEVEL = 14
+const FREQ_LOCATION = 5000 // msec
 
 
 MapboxGL.setAccessToken(Config.map.accessToken)
@@ -53,11 +55,12 @@ export default class Map extends Component {
       nearbyPoints: {
         "type": "FeatureCollection",
         "features": []
-      }
-      
+      },
+      flyFirstTime: false,
+
     }
 
-    this.userLocation = [0, 0]
+    this.userLocation = [0,0]
   }
 
   async componentWillMount() {
@@ -70,26 +73,23 @@ export default class Map extends Component {
     }
     MapboxGL.setAccessToken(Config.map.accessToken);
 
-    this.tryUpdateCurrentLocation()
-    this.convertDataToGeoJson()   // DOING:
+    // this.tryUpdateCurrentLocation()
+
+    // this.convertDataToGeoJson()   
   }
 
+  // DOING:
+  componentDidMount() {
+    console.log('componentDidMount')
+    this.tryUpdateCurrentLocation()
+    this.convertDataToGeoJson()
+  }
+
+  // DOING:
   onDidFinishLoadingMap = () => {
-    // DOING:
     console.log('onDidFinishLoadingMap')
-    // let coords = [100.5311166, 13.7270703]
-    // this._map.flyTo(coords, 12000)
-    // this._map.zoomTo(10)
-
-    // this._map.setCamera({
-    //   centerCoordinate: coords,
-    //   zoomLevel: 10,
-    //   duration: 2000,
-    // })
-
-    this.flyToUserLocation()
-
-    this.createCircleFromCenter()
+    // this.flyToUserLocation()
+    // this.createCircleFromCenter()
   }
 
   flyToUserLocation = () => {
@@ -101,7 +101,7 @@ export default class Map extends Component {
     // })
 
     this._map.flyTo(this.userLocation)
-    if(IS_ANDROID) {
+    if (IS_ANDROID) {
       this._map.zoomTo(ZOOM_LEVEL)
     }
   }
@@ -177,22 +177,34 @@ export default class Map extends Component {
   }
 
   tryUpdateCurrentLocation = () => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        console.log('position : ', position)
-        let { latitude, longitude } = position.coords
-        this.userLocation = [longitude, latitude]
-        console.log('userLocation : ', this.userLocation)
-      },
-      (error) => {
-        console.log('err : ', error)
-      },
-      // {
-      //   enableHighAccuracy: true,
-      //   timeout: 20000,
-      //   maximumAge: 1000
-      // }
-    )
+    
+    setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log('position : ', position)
+          let { latitude, longitude } = position.coords
+          this.userLocation = [longitude, latitude]
+          this.createCircleFromCenter()
+          if(!this.state.flyFirstTime) {
+            this.flyToUserLocation()
+            this.setState({
+              flyFirstTime: true
+            })
+          }
+          console.log('userLocation : ', this.userLocation)
+        },
+        (error) => {
+          console.log('err : ', error)
+        },
+        // {
+        //   enableHighAccuracy: true,
+        //   timeout: 20000,
+        //   maximumAge: 1000
+        // }
+      )
+    }, FREQ_LOCATION)
+
+    
   }
 
   onPressMap = (res) => {
@@ -203,7 +215,7 @@ export default class Map extends Component {
     let query = this._map.queryRenderedFeaturesAtPoint([
       screenPointX,
       screenPointY
-    ], null, ['bird', 'tree'])
+    ], null, ['tree'])
     console.log('query : ', query)
   }
 
@@ -224,9 +236,9 @@ export default class Map extends Component {
     // console.log('filterByID : ', filterByID)
 
 
-    return(
+    return (
       <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
-        <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree} 
+        <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree}
         //filter={["in", "$id", "a000", "a001", "a002", "a003", "a33"]} 
         //filter={filterByID} 
         />
@@ -263,13 +275,13 @@ export default class Map extends Component {
       android: 9  // under userLocation   mmg: 160 , mystyle: 9
     })
 
-    return(
+    return (
       <MapboxGL.ShapeSource id='userRadius' shape={this.state.userCirclePolygon}>
         <MapboxGL.FillLayer id='circleRadius' style={layerStyle.userCircleFill} layerIndex={circleRadiusLayerIndex} />
       </MapboxGL.ShapeSource>
     )
   }
-  
+
   renderNearbyPoints = () => {
     let symbolLayer = MapboxGL.StyleSheet.create({
       nearby: {
@@ -282,8 +294,8 @@ export default class Map extends Component {
     })
 
     // DOING:
-    if(this.state.nearbyPoints.features.length > 0) {
-      return(
+    if (this.state.nearbyPoints.features.length > 0) {
+      return (
         <MapboxGL.ShapeSource id='nearbyPoints' shape={this.state.nearbyPoints}>
           <MapboxGL.SymbolLayer id='nearbyLayer' style={symbolLayer.nearby} />
         </MapboxGL.ShapeSource>
@@ -343,11 +355,11 @@ export default class Map extends Component {
             <MapboxGL.SymbolLayer id='bird' style={symbolLayer.bird} />
           </MapboxGL.ShapeSource> */}
 
-          { this.renderPointLocations() }
+          {this.renderPointLocations()}
 
-          { this.renderUserCircleRadius() }
+          {this.renderUserCircleRadius()}
 
-          { this.renderNearbyPoints() }
+          {this.renderNearbyPoints()}
 
         </MapboxGL.MapView>
       </View>
