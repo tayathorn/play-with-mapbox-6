@@ -7,7 +7,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@mapbox/react-native-mapbox-gl": "git+https://github.com/mapbox/react-native-mapbox-gl.git#b45e6544b537fa6c6d76589558755cc425f4c381",
+    "@mapbox/react-native-mapbox-gl": "git+https://github.com/mapbox/react-native-mapbox-gl.git#v6",
     "react": "16.0.0-beta.5",
     "react-native": "0.49.3"
   },
