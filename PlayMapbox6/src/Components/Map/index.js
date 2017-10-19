@@ -72,10 +72,6 @@ export default class Map extends Component {
       });
     }
     MapboxGL.setAccessToken(Config.map.accessToken);
-
-    // this.tryUpdateCurrentLocation()
-
-    // this.convertDataToGeoJson()   
   }
 
   // DOING:
@@ -83,13 +79,6 @@ export default class Map extends Component {
     console.log('componentDidMount')
     this.tryUpdateCurrentLocation()
     this.convertDataToGeoJson()
-  }
-
-  // DOING:
-  onDidFinishLoadingMap = () => {
-    console.log('onDidFinishLoadingMap')
-    // this.flyToUserLocation()
-    // this.createCircleFromCenter()
   }
 
   flyToUserLocation = () => {
