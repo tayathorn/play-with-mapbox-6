@@ -28,7 +28,7 @@ export default class Home extends Component {
 
   }
 
-  renderCurrentLocationButton = () => {
+  renderToggleButton = () => {
     return (
       [<TouchableOpacity key='birdButton' style={[styles.bottomButton, styles.birdButton]} onPress={this.onPressBirdButton}>
         <Image
@@ -111,6 +111,7 @@ export default class Home extends Component {
             getPositionBoxOne={this.getPositionBoxOne}
             getPositionBoxTwo={this.getPositionBoxTwo}
           />
+          
           { this.renderDetail() }
       </View>
     )

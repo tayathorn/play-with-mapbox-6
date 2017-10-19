@@ -3,7 +3,9 @@ import {
   StyleSheet,
   Text,
   View,
-  Platform
+  Platform,
+  TouchableOpacity,
+  Image
 } from 'react-native';
 
 // lib
@@ -86,6 +88,10 @@ export default class Map extends Component {
     console.log('componentDidMount')
     this.tryUpdateCurrentLocation()
     this.convertDataToGeoJson()
+  }
+
+  componentWillUnMount() {
+    navigator.geolocation.clearWatch(this.watchID)
   }
 
   flyToUserLocation = () => {
@@ -214,11 +220,11 @@ export default class Map extends Component {
       (error) => {
         console.log('getCurrentPosition err : ', error)
       },
-      // {
-      //   enableHighAccuracy: true,
-      //   timeout: 2000,
-      //   maximumAge: 1000
-      // }
+      {
+        enableHighAccuracy: true,
+        timeout: 2000,
+        maximumAge: 1000
+      }
     )
   }
 
@@ -238,11 +244,12 @@ export default class Map extends Component {
       (error) => {
         console.log('watchPosition err : ', error)
       },
-      // {
-      //   enableHighAccuracy: true,
-      //   // timeout: 20000,
-      //   // maximumAge: 1000
-      // }
+      {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 1000,
+        distanceFilter: 0
+      }
     )
   }
 
@@ -306,6 +313,26 @@ export default class Map extends Component {
     // let filter = ["in", "$id", ...pointsString]
 
     return ["in", "$id", ...pointsID]
+  }
+
+  onPressCurrentLocationButton = () => {
+    // this.setState({
+    //   toggleBirdVisible: !this.state.toggleBirdVisible
+    // })
+
+    this._map.flyTo(this.userLocation)
+  }
+
+  renderCurrentLocationButton = () => {
+    return (
+      <TouchableOpacity key='currentLocationButton' style={[styles.bottomButton, styles.birdButton]} onPress={this.onPressCurrentLocationButton}>
+        <Image
+          style={{ width: 30, height: 30 }}
+          source={require('../../images/icons/current-location.png')}
+          resizeMode={'contain'}
+        />
+      </TouchableOpacity>
+    )
   }
 
   renderUserCircleRadius = (id, data, color) => {
@@ -405,14 +432,15 @@ export default class Map extends Component {
             <MapboxGL.SymbolLayer id='bird' style={symbolLayer.bird} />
           </MapboxGL.ShapeSource> */}
 
-          {this.renderPointLocations()}
-
           {this.renderUserCircleRadius(Config.circle.two.id, this.state.watchCirclePolygon, Config.circle.two.color)}
           {this.renderUserCircleRadius(Config.circle.one.id, this.state.userCirclePolygon, Config.circle.one.color)}
+
+          {this.renderPointLocations()}
 
           {this.renderNearbyPoints()}
 
         </MapboxGL.MapView>
+        { this.renderCurrentLocationButton() }
       </View>
     )
   }
@@ -421,7 +449,18 @@ export default class Map extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1
-  }
+  },
+  bottomButton: {
+    position: 'absolute',
+    backgroundColor:'white', 
+    borderRadius:25,
+    bottom: 10,
+    padding:10,
+  },
+
+  birdButton: {
+    right: 10,
+  },
 })
 
 const layerStyle = MapboxGL.StyleSheet.create({
