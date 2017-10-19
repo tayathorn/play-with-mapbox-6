@@ -18,7 +18,10 @@ export default class Home extends Component {
     this.state = ({
       toggleBirdVisible: true,
       toggleTreeVisible: true,
+      boxOnePosition: {}
     })
+
+    // this.boxOnePosition = {}
 
   }
 
@@ -41,6 +44,29 @@ export default class Home extends Component {
     )
   }
 
+  renderDetail = () => {
+    let { latitude, longitude, accuracy, speed, heading } = (this.state.boxOnePosition.coords) ? this.state.boxOnePosition.coords : {}
+
+    return(
+      <View style={styles.detailContainer}>
+        <View style={[styles.detailBox, styles.boxOne]}>
+          <Text>GET</Text>
+          <Text>lat: {latitude}</Text>
+          <Text>lon: {longitude}</Text>
+          <Text>acc: {accuracy}</Text>
+          <Text>spd: {speed}</Text>
+          <Text>head: {heading}</Text>
+        </View>
+      </View>
+    )
+  }
+
+  getPositionBoxOne = (position) => {
+    this.setState({
+      boxOnePosition: position
+    })
+  }
+
   onPressBirdButton = () => {
     this.setState({
       toggleBirdVisible: !this.state.toggleBirdVisible
@@ -59,8 +85,9 @@ export default class Home extends Component {
           <Map
             visibleBird={this.state.toggleBirdVisible}
             visibleTree={this.state.toggleTreeVisible}
+            getPositionBoxOne={this.getPositionBoxOne}
           />
-          { this.renderCurrentLocationButton() }
+          { this.renderDetail() }
       </View>
     )
   }
@@ -85,6 +112,24 @@ const styles = StyleSheet.create({
 
   treeButton: {
     right: 70,
+  },
+
+  detailContainer: {
+    flex:0.5,
+    backgroundColor: '#E0E0E0'
+  },
+
+  detailBox: {
+    flex: 1,
+    margin: 5,
+    padding: 5,
+    borderRadius: 10,
+    // opacity: 0.5
+    
+  },
+
+  boxOne: {
+    backgroundColor: '#607D8B',
   }
   
   // userLocationButtonContainer: {

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, PropTypes } from 'react';
 import {
   StyleSheet,
   Text,
@@ -29,7 +29,7 @@ import tree from '../../images/icons/tree-pine.png'
 // const
 const _ = undefined
 const INITIAL_COORD = [0, 0]
-const RADIUS = 1 // unit : KM
+const RADIUS = 0.5 // unit : KM
 const ZOOM_LEVEL = 14
 const FREQ_LOCATION = 5000 // msec
 
@@ -60,7 +60,9 @@ export default class Map extends Component {
 
     }
 
-    this.userLocation = [0,0]
+    this.userLocation = [0, 0]
+
+    this.watchID = undefined  // DOING:
   }
 
   async componentWillMount() {
@@ -166,34 +168,59 @@ export default class Map extends Component {
   }
 
   tryUpdateCurrentLocation = () => {
-    
+
     setInterval(() => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log('position : ', position)
-          let { latitude, longitude } = position.coords
-          this.userLocation = [longitude, latitude]
-          this.createCircleFromCenter()
-          if(!this.state.flyFirstTime) {
-            this.flyToUserLocation()
-            this.setState({
-              flyFirstTime: true
-            })
-          }
-          console.log('userLocation : ', this.userLocation)
-        },
-        (error) => {
-          console.log('err : ', error)
-        },
-        // {
-        //   enableHighAccuracy: true,
-        //   timeout: 20000,
-        //   maximumAge: 1000
-        // }
-      )
+      this.getCurrentPosition()
     }, FREQ_LOCATION)
 
-    
+    // this.getCurrentPosition()
+  }
+
+  getCurrentPosition = () => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (this.props.getPositionBoxOne) {
+          this.props.getPositionBoxOne(position)
+        }
+        let { longitude, latitude } = position.coords
+        this.userLocation = [longitude, latitude]
+        this.createCircleFromCenter()
+        if (!this.state.flyFirstTime) {
+          this.flyToUserLocation()
+          this.setState({
+            flyFirstTime: true
+          })
+        }
+      },
+      (error) => {
+        console.log('getCurrentPosition err : ', error)
+        // this.watchPosition()
+      },
+      // {
+      //   enableHighAccuracy: true,
+      //   timeout: 2000,
+      //   maximumAge: 1000
+      // }
+    )
+  }
+
+  watchPosition = () => {
+    this.watchID = navigator.geolocation.watchPosition(
+      (position) => {
+        // console.log('watchPosition : ', position)
+        let { latitude, longitude } = position.coords
+        this.lastPosition = JSON.stringify(position)
+        console.log(`lastPosition : [${latitude}, ${longitude}]`)
+      },
+      (error) => {
+        console.log('watchPosition err : ', error)
+      },
+      // {
+      //   enableHighAccuracy: true,
+      //   // timeout: 20000,
+      //   // maximumAge: 1000
+      // }
+    )
   }
 
   onPressMap = (res) => {
@@ -264,9 +291,17 @@ export default class Map extends Component {
       android: 9  // under userLocation   mmg: 160 , mystyle: 9
     })
 
+    let symbolStyle = MapboxGL.StyleSheet.create({
+      circle: {
+        textField: 'aa'
+      }
+    })
+
     return (
       <MapboxGL.ShapeSource id='userRadius' shape={this.state.userCirclePolygon}>
-        <MapboxGL.FillLayer id='circleRadius' style={layerStyle.userCircleFill} layerIndex={circleRadiusLayerIndex} />
+        <MapboxGL.FillLayer id='circleRadius' style={layerStyle.userCircleFill}
+        //layerIndex={circleRadiusLayerIndex} 
+        />
       </MapboxGL.ShapeSource>
     )
   }
@@ -372,7 +407,15 @@ const layerStyle = MapboxGL.StyleSheet.create({
 
   userCircleFill: {
     fillColor: '#607D8B',
-    fillOpacity: 0.5
+    fillOpacity: 0.8
   }
 
 })
+
+// Map.propTypes = {
+//   getPositionBoxOne: PropTypes.func
+// }
+
+// Map.defaultProps = {
+//   getPositionBoxOne: ()=> {},
+// }
