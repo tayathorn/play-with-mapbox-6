@@ -10,6 +10,8 @@ import {
 
 import Map from '../Map'
 
+import { Config } from '../../config'
+
 export default class Home extends Component {
 
   constructor(props) {
@@ -18,7 +20,8 @@ export default class Home extends Component {
     this.state = ({
       toggleBirdVisible: true,
       toggleTreeVisible: true,
-      boxOnePosition: {}
+      boxOnePosition: {},
+      boxTwoPosition: {}
     })
 
     // this.boxOnePosition = {}
@@ -45,18 +48,32 @@ export default class Home extends Component {
   }
 
   renderDetail = () => {
-    let { latitude, longitude, accuracy, speed, heading } = (this.state.boxOnePosition.coords) ? this.state.boxOnePosition.coords : {}
+    // let { latitude, longitude, accuracy, speed, heading } = (this.state.boxOnePosition.coords) ? this.state.boxOnePosition.coords : {}
 
     return(
       <View style={styles.detailContainer}>
         <View style={[styles.detailBox, styles.boxOne]}>
           <Text>GET</Text>
-          <Text>lat: {latitude}</Text>
-          <Text>lon: {longitude}</Text>
-          <Text>acc: {accuracy}</Text>
-          <Text>spd: {speed}</Text>
-          <Text>head: {heading}</Text>
+          { this.renderDetailBox(this.state.boxOnePosition)}
         </View>
+        <View style={[styles.detailBox, styles.boxTwo]}>
+        <Text>Watch</Text>
+          { this.renderDetailBox(this.state.boxTwoPosition)}
+        </View>
+      </View>
+    )
+  }
+
+  renderDetailBox = (data) => {
+    let { latitude, longitude, accuracy, speed, heading } = (data.coords) ? data.coords : {}
+
+    return(
+      <View>
+        <Text>lat: {latitude}</Text>
+        <Text>lon: {longitude}</Text>
+        <Text>acc: {accuracy}</Text>
+        <Text>spd: {speed}</Text>
+        <Text>head: {heading}</Text>
       </View>
     )
   }
@@ -64,6 +81,12 @@ export default class Home extends Component {
   getPositionBoxOne = (position) => {
     this.setState({
       boxOnePosition: position
+    })
+  }
+  
+  getPositionBoxTwo = (position) => {
+    this.setState({
+      boxTwoPosition: position
     })
   }
 
@@ -86,6 +109,7 @@ export default class Home extends Component {
             visibleBird={this.state.toggleBirdVisible}
             visibleTree={this.state.toggleTreeVisible}
             getPositionBoxOne={this.getPositionBoxOne}
+            getPositionBoxTwo={this.getPositionBoxTwo}
           />
           { this.renderDetail() }
       </View>
@@ -116,6 +140,7 @@ const styles = StyleSheet.create({
 
   detailContainer: {
     flex:0.5,
+    flexDirection: 'row',
     backgroundColor: '#E0E0E0'
   },
 
@@ -129,7 +154,11 @@ const styles = StyleSheet.create({
   },
 
   boxOne: {
-    backgroundColor: '#607D8B',
+    backgroundColor: Config.circle.one.color,
+  },
+  
+  boxTwo: {
+    backgroundColor: Config.circle.two.color,
   }
   
   // userLocationButtonContainer: {

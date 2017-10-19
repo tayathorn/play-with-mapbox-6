@@ -29,7 +29,7 @@ import tree from '../../images/icons/tree-pine.png'
 // const
 const _ = undefined
 const INITIAL_COORD = [0, 0]
-const RADIUS = 0.5 // unit : KM
+// const RADIUS = 0.5 // unit : KM
 const ZOOM_LEVEL = 14
 const FREQ_LOCATION = 5000 // msec
 
@@ -52,6 +52,10 @@ export default class Map extends Component {
         "type": "FeatureCollection",
         "features": []
       },
+      watchCirclePolygon: {
+        "type": "FeatureCollection",
+        "features": []
+      },
       nearbyPoints: {
         "type": "FeatureCollection",
         "features": []
@@ -61,6 +65,7 @@ export default class Map extends Component {
     }
 
     this.userLocation = [0, 0]
+    this.watchLocation = [0, 0]
 
     this.watchID = undefined  // DOING:
   }
@@ -140,7 +145,7 @@ export default class Map extends Component {
   }
 
   createCircleFromCenter = () => {
-    let circle = GeoJsonHelper.createCirclePolygon(this.userLocation, RADIUS)
+    let circle = GeoJsonHelper.createCirclePolygon(this.userLocation, Config.circle.one.radius)
     console.log('circle : ', circle)
 
     let featureCollectionCircle = GeoJsonHelper.convertToGeoJsonFeatureCollection([circle])
@@ -150,6 +155,18 @@ export default class Map extends Component {
       userCirclePolygon: featureCollectionCircle
     }, () => {
       this.findNearbyPlaces()
+    })
+  }
+
+    // DOING:
+  createCircleFromWatch = () => {
+    let circle = GeoJsonHelper.createCirclePolygon(this.watchLocation, Config.circle.two.radius)
+    let featureCollectionCircle = GeoJsonHelper.convertToGeoJsonFeatureCollection([circle])
+
+    this.setState({
+      watchCirclePolygon: featureCollectionCircle
+    }, () => {
+      console.log('watchCirclePolygon : ', this.state.watchCirclePolygon)
     })
   }
 
@@ -173,6 +190,8 @@ export default class Map extends Component {
       this.getCurrentPosition()
     }, FREQ_LOCATION)
 
+    this.watchPosition()
+
     // this.getCurrentPosition()
   }
 
@@ -194,7 +213,6 @@ export default class Map extends Component {
       },
       (error) => {
         console.log('getCurrentPosition err : ', error)
-        // this.watchPosition()
       },
       // {
       //   enableHighAccuracy: true,
@@ -208,8 +226,13 @@ export default class Map extends Component {
     this.watchID = navigator.geolocation.watchPosition(
       (position) => {
         // console.log('watchPosition : ', position)
+        if (this.props.getPositionBoxTwo) {
+          this.props.getPositionBoxTwo(position)
+        }
         let { latitude, longitude } = position.coords
-        this.lastPosition = JSON.stringify(position)
+        this.watchLocation = [longitude, latitude]
+        this.createCircleFromWatch()
+        // this.lastPosition = JSON.stringify(position)
         console.log(`lastPosition : [${latitude}, ${longitude}]`)
       },
       (error) => {
@@ -285,21 +308,24 @@ export default class Map extends Component {
     return ["in", "$id", ...pointsID]
   }
 
-  renderUserCircleRadius = () => {
+  renderUserCircleRadius = (id, data, color) => {
     let circleRadiusLayerIndex = Platform.select({
       ios: null,
       android: 9  // under userLocation   mmg: 160 , mystyle: 9
     })
 
-    let symbolStyle = MapboxGL.StyleSheet.create({
-      circle: {
-        textField: 'aa'
+    const fillLayerStyle = MapboxGL.StyleSheet.create({
+      userCircleFill: {
+        // fillColor: '#607D8B',
+        fillColor: (color) ? color : 'black',
+        fillOpacity: 0.8
       }
+    
     })
 
     return (
-      <MapboxGL.ShapeSource id='userRadius' shape={this.state.userCirclePolygon}>
-        <MapboxGL.FillLayer id='circleRadius' style={layerStyle.userCircleFill}
+      <MapboxGL.ShapeSource id={`${id}Source`} shape={data}>
+        <MapboxGL.FillLayer id={`${id}Circle`} style={fillLayerStyle.userCircleFill}
         //layerIndex={circleRadiusLayerIndex} 
         />
       </MapboxGL.ShapeSource>
@@ -381,7 +407,8 @@ export default class Map extends Component {
 
           {this.renderPointLocations()}
 
-          {this.renderUserCircleRadius()}
+          {this.renderUserCircleRadius(Config.circle.two.id, this.state.watchCirclePolygon, Config.circle.two.color)}
+          {this.renderUserCircleRadius(Config.circle.one.id, this.state.userCirclePolygon, Config.circle.one.color)}
 
           {this.renderNearbyPoints()}
 
