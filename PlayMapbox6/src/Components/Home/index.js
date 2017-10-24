@@ -21,7 +21,9 @@ export default class Home extends Component {
       toggleBirdVisible: true,
       toggleTreeVisible: true,
       boxOnePosition: {},
-      boxTwoPosition: {}
+      boxTwoPosition: {},
+      boxThreePosition: {},
+      boxFourPosition: {},
     })
 
     // this.boxOnePosition = {}
@@ -57,8 +59,16 @@ export default class Home extends Component {
           { this.renderDetailBox(this.state.boxOnePosition)}
         </View>
         <View style={[styles.detailBox, styles.boxTwo]}>
-        <Text>Watch</Text>
+          <Text>Watch</Text>
           { this.renderDetailBox(this.state.boxTwoPosition)}
+        </View>
+        <View style={[styles.detailBox, styles.boxThree]}>
+          <Text>GET H</Text>
+          { this.renderDetailBox(this.state.boxThreePosition)}
+        </View>
+        <View style={[styles.detailBox, styles.boxFour]}>
+          <Text>Watch H</Text>
+          { this.renderDetailBox(this.state.boxFourPosition)}
         </View>
       </View>
     )
@@ -89,6 +99,18 @@ export default class Home extends Component {
       boxTwoPosition: position
     })
   }
+  
+  getPositionBoxThree = (position) => {
+    this.setState({
+      boxThreePosition: position
+    })
+  }
+  
+  getPositionBoxFour = (position) => {
+    this.setState({
+      boxFourPosition: position
+    })
+  }
 
   onPressBirdButton = () => {
     this.setState({
@@ -110,6 +132,8 @@ export default class Home extends Component {
             visibleTree={this.state.toggleTreeVisible}
             getPositionBoxOne={this.getPositionBoxOne}
             getPositionBoxTwo={this.getPositionBoxTwo}
+            getPositionBoxThree={this.getPositionBoxThree}
+            getPositionBoxFour={this.getPositionBoxFour}
           />
           
           { this.renderDetail() }
@@ -160,6 +184,14 @@ const styles = StyleSheet.create({
   
   boxTwo: {
     backgroundColor: Config.circle.two.color,
+  },
+  
+  boxThree: {
+    backgroundColor: Config.circle.three.color,
+  },
+  
+  boxFour: {
+    backgroundColor: Config.circle.four.color,
   }
   
   // userLocationButtonContainer: {

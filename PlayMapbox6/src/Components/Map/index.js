@@ -58,6 +58,14 @@ export default class Map extends Component {
         "type": "FeatureCollection",
         "features": []
       },
+      userWithHighCirclePolygon: {
+        "type": "FeatureCollection",
+        "features": []
+      },
+      watchWithHighCirclePolygon: {
+        "type": "FeatureCollection",
+        "features": []
+      },
       nearbyPoints: {
         "type": "FeatureCollection",
         "features": []
@@ -68,8 +76,11 @@ export default class Map extends Component {
 
     this.userLocation = [0, 0]
     this.watchLocation = [0, 0]
+    this.userWithHighLocation = [0, 0]
+    this.watchWithHighLocation = [0, 0]
 
     this.watchID = undefined  // DOING:
+    this.watchIDWithHigh = undefined  // DOING:
   }
 
   async componentWillMount() {
@@ -163,6 +174,18 @@ export default class Map extends Component {
       this.findNearbyPlaces()
     })
   }
+  
+  createCircleWithHighFromCenter = () => {
+    let circle = GeoJsonHelper.createCirclePolygon(this.userWithHighLocation, Config.circle.three.radius)
+    // console.log('circle : ', circle)
+
+    let featureCollectionCircle = GeoJsonHelper.convertToGeoJsonFeatureCollection([circle])
+    // console.log('featureCollectionCircle : ', featureCollectionCircle)
+
+    this.setState({
+      userWithHighCirclePolygon: featureCollectionCircle
+    })
+  }
 
     // DOING:
   createCircleFromWatch = () => {
@@ -173,6 +196,15 @@ export default class Map extends Component {
       watchCirclePolygon: featureCollectionCircle
     }, () => {
       console.log('watchCirclePolygon : ', this.state.watchCirclePolygon)
+    })
+  }
+
+  createCircleWithHighFromWatch = () => {
+    let circle = GeoJsonHelper.createCirclePolygon(this.watchWithHighLocation, Config.circle.four.radius)
+    let featureCollectionCircle = GeoJsonHelper.convertToGeoJsonFeatureCollection([circle])
+
+    this.setState({
+      watchWithHighCirclePolygon: featureCollectionCircle
     })
   }
 
@@ -194,9 +226,11 @@ export default class Map extends Component {
 
     setInterval(() => {
       this.getCurrentPosition()
+      this.getCurrentPositionWithHigh()
     }, FREQ_LOCATION)
 
     this.watchPosition()
+    this.watchWithHighPosition()
 
     // this.getCurrentPosition()
   }
@@ -216,6 +250,27 @@ export default class Map extends Component {
             flyFirstTime: true
           })
         }
+      },
+      (error) => {
+        console.log('getCurrentPosition err : ', error)
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 2000,
+        maximumAge: 1000
+      }
+    )
+  }
+
+  getCurrentPositionWithHigh = () => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (this.props.getPositionBoxThree) {
+          this.props.getPositionBoxThree(position)
+        }
+        let { longitude, latitude } = position.coords
+        this.userWithHighLocation = [longitude, latitude]
+        this.createCircleWithHighFromCenter()
       },
       (error) => {
         console.log('getCurrentPosition err : ', error)
@@ -245,10 +300,33 @@ export default class Map extends Component {
         console.log('watchPosition err : ', error)
       },
       {
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 1000,
+      }
+    )
+  }
+
+  watchWithHighPosition = () => {
+    this.watchIDWithHigh = navigator.geolocation.watchPosition(
+      (position) => {
+        // console.log('watchPosition : ', position)
+        if (this.props.getPositionBoxFour) {
+          this.props.getPositionBoxFour(position)
+        }
+        let { latitude, longitude } = position.coords
+        this.watchWithHighLocation = [longitude, latitude]
+        this.createCircleWithHighFromWatch()
+        // this.lastPosition = JSON.stringify(position)
+        // console.log(`lastPosition : [${latitude}, ${longitude}]`)
+      },
+      (error) => {
+        console.log('watchPosition err : ', error)
+      },
+      {
         enableHighAccuracy: true,
         timeout: 20000,
         maximumAge: 1000,
-        distanceFilter: 0
       }
     )
   }
@@ -345,7 +423,7 @@ export default class Map extends Component {
       userCircleFill: {
         // fillColor: '#607D8B',
         fillColor: (color) ? color : 'black',
-        fillOpacity: 0.8
+        fillOpacity: 0.4
       }
     
     })
@@ -432,6 +510,8 @@ export default class Map extends Component {
             <MapboxGL.SymbolLayer id='bird' style={symbolLayer.bird} />
           </MapboxGL.ShapeSource> */}
 
+          {this.renderUserCircleRadius(Config.circle.four.id, this.state.watchWithHighCirclePolygon, Config.circle.four.color)}
+          {this.renderUserCircleRadius(Config.circle.three.id, this.state.userWithHighCirclePolygon, Config.circle.three.color)}
           {this.renderUserCircleRadius(Config.circle.two.id, this.state.watchCirclePolygon, Config.circle.two.color)}
           {this.renderUserCircleRadius(Config.circle.one.id, this.state.userCirclePolygon, Config.circle.one.color)}
 
