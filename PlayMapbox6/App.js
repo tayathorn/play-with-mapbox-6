@@ -14,6 +14,8 @@ import {
 
 import Home from './src/Components/Home'
 
+// const DURATION = 120000  // 2 min
+
 // const instructions = Platform.select({
 //   ios: 'Press Cmd+R to reload,\n' +
 //     'Cmd+D or shake for dev menu',
@@ -22,6 +24,25 @@ import Home from './src/Components/Home'
 // });
 
 export default class App extends Component {
+
+  // makeTimer = () => {
+  //   var start = Date.now();
+  //   for (var i = 0; i < 1000; i++) {
+  //     setTimeout(this.onFire, DURATION);
+  //   }
+  //   // console.log('Timers made in', Date.now() - start, 'msecs');
+  // }
+
+  // onFire = () => {
+  //   var now = Date.now();
+    
+  //   console.log('Timers :: Fireeee !!! : ', now)
+  // }
+
+  componentDidMount() {
+    // this.makeTimer()
+  }
+
   render() {
     return (
       <View style={styles.container}>
