@@ -34,6 +34,7 @@ const INITIAL_COORD = [0, 0]
 // const RADIUS = 0.5 // unit : KM
 const ZOOM_LEVEL = 14
 const FREQ_LOCATION = 5000 // msec
+const ANNOTATION_SIZE = 30
 
 
 MapboxGL.setAccessToken(Config.map.accessToken)
@@ -98,7 +99,7 @@ export default class Map extends Component {
   componentDidMount() {
     console.log('componentDidMount')
     this.tryUpdateCurrentLocation()
-    this.convertDataToGeoJson()
+    // this.convertDataToGeoJson()
   }
 
   componentWillUnMount() {
@@ -458,6 +459,39 @@ export default class Map extends Component {
     }
   }
 
+  onSelectedAnnotation = () => {
+    console.log('onSelectedAnnotation')
+  }
+
+
+  // DELETE:
+  renderAnnotations = () => {
+
+    // let annotations = []
+
+    let annotations = PostalJson.map((data) => {
+      // let coordinates = [data.lat, data.lng]
+      let coordinates = [data.lng, data.lat]
+      return(
+        <MapboxGL.PointAnnotation
+          key={data.id}
+          id={data.id}
+          title={data.district}
+          onSelected={this.onSelectedAnnotation}
+          coordinate={coordinates}
+        >
+          <View style={styles.annotationContainer}>
+            <Image source={deer} style={{width: ANNOTATION_SIZE, height: ANNOTATION_SIZE}}/>
+          </View>
+        </MapboxGL.PointAnnotation>
+      )
+    })
+
+    return annotations
+
+
+  }
+
   render() {
     if (IS_ANDROID && !this.state.isAndroidPermissionGranted) {
       if (this.state.isFetchingAndroidPermission) {
@@ -515,9 +549,11 @@ export default class Map extends Component {
           {this.renderUserCircleRadius(Config.circle.two.id, this.state.watchCirclePolygon, Config.circle.two.color)}
           {this.renderUserCircleRadius(Config.circle.one.id, this.state.userCirclePolygon, Config.circle.one.color)}
 
-          {this.renderPointLocations()}
+          {/* {this.renderPointLocations()} */}
 
           {this.renderNearbyPoints()}
+
+          {this.renderAnnotations() }
 
         </MapboxGL.MapView>
         { this.renderCurrentLocationButton() }
@@ -541,6 +577,17 @@ const styles = StyleSheet.create({
   birdButton: {
     right: 10,
   },
+
+  annotationContainer: {
+    width: ANNOTATION_SIZE,
+    height: ANNOTATION_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // backgroundColor: 'white',
+    // borderRadius: ANNOTATION_SIZE / 2,
+    // borderWidth: StyleSheet.hairlineWidth,
+    // borderColor: 'rgba(0, 0, 0, 0.45)',
+  }
 })
 
 const layerStyle = MapboxGL.StyleSheet.create({
