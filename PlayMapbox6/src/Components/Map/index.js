@@ -144,6 +144,7 @@ export default class Map extends Component {
         province: postal.province,
         district: postal.district,
         // icon: this.testIcon(index)
+        icon: 'tree'
       }
 
       let id = `a${postal.id}`
@@ -347,8 +348,8 @@ export default class Map extends Component {
   renderPointLocations = () => {
     let symbolLayer = MapboxGL.StyleSheet.create({
       tree: {
-        iconImage: tree,
-        // iconImage: '{icon}',
+        // iconImage: tree,
+        iconImage: '{icon}',
         iconSize: Platform.select({
           ios: 0.1,
           android: 0.3
@@ -362,7 +363,11 @@ export default class Map extends Component {
 
 
     return (
-      <MapboxGL.ShapeSource id='postalSource2' shape={this.state.geoJsonPointsCollection}>
+      <MapboxGL.ShapeSource 
+        id='postalSource2' 
+        shape={this.state.geoJsonPointsCollection}
+        images={{ tree: tree }}
+      >
         <MapboxGL.SymbolLayer id='tree' style={symbolLayer.tree}
         //filter={["in", "$id", "a000", "a001", "a002", "a003", "a33"]} 
         //filter={filterByID} 
@@ -549,11 +554,11 @@ export default class Map extends Component {
           {this.renderUserCircleRadius(Config.circle.two.id, this.state.watchCirclePolygon, Config.circle.two.color)}
           {this.renderUserCircleRadius(Config.circle.one.id, this.state.userCirclePolygon, Config.circle.one.color)}
 
-          {/* {this.renderPointLocations()} */}
+          {this.renderPointLocations()}
 
           {this.renderNearbyPoints()}
 
-          {this.renderAnnotations() }
+          {/* {this.renderAnnotations() } */}
 
         </MapboxGL.MapView>
         { this.renderCurrentLocationButton() }
